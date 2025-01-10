@@ -12,6 +12,11 @@ namespace QueueSifmes.Helpers
             return File.Exists(filePath);
         }
 
+        public static void DeleteFile()
+        {
+            File.Delete(filePath);
+        }
+
         public static StationData ReadFile()
         {
             string content = File.ReadAllText(filePath);

@@ -1,4 +1,5 @@
-﻿using QueueSifmes.Services;
+﻿using QueueSifmes.Helpers;
+using QueueSifmes.Services;
 using QueueSifmes.StationDataPLC;
 using S7.Net;
 using System;
@@ -83,6 +84,10 @@ namespace QueueSifmes
                             //{
                             //    ProcessStation405();
                             //}
+                            //else if (plcStation == 407)
+                            //{
+                            //    ProcessStation407();
+                            //}
 
                             Console.WriteLine($"Station {plcStation} processing index: {stationData.CurrentIndexContainer}");
 
@@ -114,6 +119,10 @@ namespace QueueSifmes
                     {
                         //Console.WriteLine($"Error processing SIF {plcClient?.IP ?? "N/A"}: {ex.Message}");
                         Console.WriteLine($"Error processing SIF {plcStation}: {ex.Message}");
+                        if (plcStation == 407)
+                        {
+                            FileHelper.DeleteFile();
+                        }
                     }
                 }
                 else
@@ -129,6 +138,8 @@ namespace QueueSifmes
                 return "192.168.0.1"; // IP của Station 402
             else if (plcStation == 402)
                 return "192.168.0.18"; // IP của Station 405
+            else if (plcStation == 405)
+                return "192.168.0.20"; // IP của Station 407
             else
                 return null; // Không có station tiếp theo
         }
@@ -187,7 +198,7 @@ namespace QueueSifmes
 
         private void ProcessStation401(StationData stationData)
         {
-            APIClient.sendString(plcClient, plcDB, start_byte_for_struct.string_start_byte, stationData.RFID);
+            //APIClient.sendString(plcClient, plcDB, start_byte_for_struct.string_start_byte, stationData.RFID);
             while (true)
             {
                 bool flag = CheckAcknowledgment();
@@ -257,6 +268,29 @@ namespace QueueSifmes
                     }
                 }
             }
+        }
+
+        private void ProcessStation407()
+        {
+            APIClient.sendBool(plcClient, plcDB, 2, true);
+            while (true)
+            {
+                bool isLabeling = APIClient.read_bool(plcClient, plcDB, 3);
+                if (isLabeling == true)
+                {
+                    bool isValid = true;
+                    if (isValid)
+                    {
+                        APIClient.sendBool(plcClient, plcDB, 4, true);
+                        bool result = CheckAcknowledgment();
+                        if (result == true)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            updateStatus();
         }
 
         #endregion
