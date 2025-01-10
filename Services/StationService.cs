@@ -112,6 +112,10 @@ namespace QueueSifmes
                             else
                             {
                                 Console.WriteLine($"Station {plcStation} completed processing for index: {stationData.CurrentIndexContainer}");
+                                if (plcStation == 407)
+                                {
+                                    FileHelper.DeleteFile();
+                                }
                             }
                         }
                     }
@@ -119,10 +123,6 @@ namespace QueueSifmes
                     {
                         //Console.WriteLine($"Error processing SIF {plcClient?.IP ?? "N/A"}: {ex.Message}");
                         Console.WriteLine($"Error processing SIF {plcStation}: {ex.Message}");
-                        if (plcStation == 407)
-                        {
-                            FileHelper.DeleteFile();
-                        }
                     }
                 }
                 else
