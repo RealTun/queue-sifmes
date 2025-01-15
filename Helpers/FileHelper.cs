@@ -9,8 +9,11 @@ namespace QueueSifmes.Helpers
 {
     internal class FileHelper
     {
-        private static string outputFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\output.txt";
-        private static string ipFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\outputIP.txt";
+        //private static string outputFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\output.txt";
+        //private static string ipFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\outputIP.txt";
+
+        private static string outputFile = @"D:\Work\Report\job69\output.txt";
+        private static string ipFile = @"D:\Work\Report\job69\outputIP.txt";
         public static bool IsExistFile()
         {
             return File.Exists(outputFile);

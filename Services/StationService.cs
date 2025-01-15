@@ -24,9 +24,9 @@ namespace QueueSifmes
 
         public StationService(string ip, int plcStation, StationServiceManager stationManager)
         {
-            //plcClient = new Plc(CpuType.S71500, ip, 0, 1);
-            //plcClient.ReadTimeout = 5000;
-            //plcClient.WriteTimeout = 5000;
+            plcClient = new Plc(CpuType.S71500, ip, 0, 1);
+            plcClient.ReadTimeout = 5000;
+            plcClient.WriteTimeout = 5000;
             plcDB = 10;
             this.stationManager = stationManager; // Gán giá trị
             this.ip = ip;
@@ -74,25 +74,33 @@ namespace QueueSifmes
                 {
                     try
                     {
-                        //OpenConnection();
+                        OpenConnection();
                         if (data is StationData stationData)
                         {
-                            //if (plcStation == 401)
-                            //{
-                            //    ProcessStation401(stationData);
-                            //}
-                            //else if (plcStation == 402)
-                            //{
-                            //    ProcessStation402(stationData);
-                            //}
-                            //else if (plcStation == 405)
-                            //{
-                            //    ProcessStation405();
-                            //}
-                            //else if (plcStation == 407)
-                            //{
-                            //    ProcessStation407();
-                            //}
+                            switch (plcStation)
+                            {
+                                case 401:
+                                    ProcessStation401(stationData);
+                                    break;
+                                case 402:
+                                    ProcessStation402(stationData);
+                                    break;
+                                case 405:
+                                    ProcessStation405();
+                                    break;
+                                case 407:
+                                    ProcessStation407();
+                                    break;
+                                case 408:
+                                    ProcessStation408();
+                                    break;
+                                case 409:
+                                    ProcessStation409();
+                                    break;
+                                default:
+                                    break;
+                            }
+
 
                             Console.WriteLine($"Station {plcStation} processing index: {stationData.CurrentIndexContainer}");
 
@@ -117,10 +125,10 @@ namespace QueueSifmes
                             else
                             {
                                 Console.WriteLine($"Station {plcStation} completed processing for index: {stationData.CurrentIndexContainer}");
-                                if (plcStation == 407)
-                                {
-                                    FileHelper.DeleteFile();
-                                }
+                                //if (plcStation == 409)
+                                //{
+                                //    FileHelper.DeleteFile();
+                                //}
                             }
                         }
                     }
@@ -315,6 +323,20 @@ namespace QueueSifmes
                 }
             }
             updateStatus();
+        }
+
+        private void ProcessStation409()
+        {
+            APIClient.sendBool(plcClient, plcDB, 2, true);
+            while (true)
+            {
+                bool result = CheckAcknowledgment();
+                if (result == true)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    break;
+                }
+            }
         }
 
         #endregion
