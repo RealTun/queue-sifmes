@@ -39,6 +39,7 @@ namespace QueueSifmes
             processingThread.Start();
         }
 
+        #region connect, close
         // Mở kết nối PLC
         private void OpenConnection()
         {
@@ -56,6 +57,8 @@ namespace QueueSifmes
                 plcClient.Close();
             }
         }
+
+        #endregion
 
         #region process queue
         public void EnqueueStation(object data)
@@ -133,14 +136,15 @@ namespace QueueSifmes
                 }
             }
         }
+
         private string GetNextStationIp()
         {
             List<IPData> listData = FileHelper.ReadAllLines();
-            for(int i = 0; i < listData.Count; i++)
+            for (int i = 0; i < listData.Count; i++)
             {
                 if (listData[i].IdStation == plcStation)
                 {
-                    return listData[i+1].IP;
+                    return listData[i + 1].IP;
                 }
             }
             return null;
@@ -204,6 +208,7 @@ namespace QueueSifmes
                 bool flag = CheckAcknowledgment();
                 if (flag == true)
                 {
+                    var rfid = APIClient.read_string(plcClient, plcDB, start_byte_for_struct.string_start_byte);
                     break;
                 }
             }
@@ -227,7 +232,10 @@ namespace QueueSifmes
 
         private async void ProcessStation405()
         {
+            int circleOrSquare = 5;
             APIClient.sendBool(plcClient, plcDB, 2, true);
+            APIClient.sendBool(plcClient, plcDB, circleOrSquare, true);
+            APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 1 : 2, 6);
             while (true)
             {
                 bool bool3Status = APIClient.read_bool(plcClient, plcDB, 3);
@@ -254,11 +262,10 @@ namespace QueueSifmes
                     bool bool4Status = APIClient.read_bool(plcClient, plcDB, 4);
                     if (bool4Status == true)
                     {
-                        // Nếu Bool4 = true, reset tất cả các bool và kết thúc xử lý thùng hiện tại
-                        for (int i = 1; i <= 4; i++)
-                        {
-                            APIClient.sendBool(plcClient, plcDB, i, false);
-                        }
+                        APIClient.sendBool(plcClient, plcDB, 2, false);
+                        APIClient.sendBool(plcClient, plcDB, 4, false);
+                        APIClient.sendBool(plcClient, plcDB, circleOrSquare, false);
+                        APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 1 : 2, 0);
                         break; // Xử lý thùng tiếp theo
                     }
                     else
@@ -285,9 +292,26 @@ namespace QueueSifmes
                         bool result = CheckAcknowledgment();
                         if (result == true)
                         {
-                            break;
+                            APIClient.sendBool(plcClient, plcDB, 2, false);
+                            APIClient.sendBool(plcClient, plcDB, 4, false);
+                            break; // Xử lý thùng tiếp theo
                         }
                     }
+                }
+            }
+            updateStatus();
+        }
+
+        private void ProcessStation408()
+        {
+            APIClient.sendBool(plcClient, plcDB, 2, true);
+            while (true)
+            {
+                bool result = CheckAcknowledgment();
+                if (result == true)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    break;
                 }
             }
             updateStatus();
