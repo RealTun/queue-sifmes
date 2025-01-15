@@ -1,9 +1,11 @@
 ﻿using QueueSifmes.Helpers;
+using QueueSifmes.Models;
 using QueueSifmes.Services;
 using QueueSifmes.StationDataPLC;
 using S7.Net;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -131,17 +133,17 @@ namespace QueueSifmes
                 }
             }
         }
-
         private string GetNextStationIp()
         {
-            if (plcStation == 401)
-                return "192.168.0.1"; // IP của Station 402
-            else if (plcStation == 402)
-                return "192.168.0.18"; // IP của Station 405
-            else if (plcStation == 405)
-                return "192.168.0.20"; // IP của Station 407
-            else
-                return null; // Không có station tiếp theo
+            List<IPData> listData = FileHelper.ReadAllLines();
+            for(int i = 0; i < listData.Count; i++)
+            {
+                if (listData[i].IdStation == plcStation)
+                {
+                    return listData[i+1].IP;
+                }
+            }
+            return null;
         }
         #endregion
 
@@ -191,14 +193,12 @@ namespace QueueSifmes
             APIClient.sendInt(plcClient, plcDB, 2, 0);
             APIClient.sendBool(plcClient, plcDB, 1, false);
         }
-
         #endregion
 
         #region process station
 
         private void ProcessStation401(StationData stationData)
         {
-            //APIClient.sendString(plcClient, plcDB, start_byte_for_struct.string_start_byte, stationData.RFID);
             while (true)
             {
                 bool flag = CheckAcknowledgment();

@@ -1,7 +1,9 @@
 ﻿using QueueSifmes.Helpers;
+using QueueSifmes.Models;
 using QueueSifmes.Services;
 using QueueSifmes.StationDataPLC;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,18 +13,17 @@ namespace QueueSifmes
     {
         static async Task Main(string[] args)
         {
-            const string ip1 = "192.168.1.15";
-            const string ip2 = "192.168.0.1";
-            const string ip3 = "192.168.0.18";
-            const string ip4 = "192.168.0.20";
-
             var stationServiceManager = new StationServiceManager();
 
-            // Khởi tạo các station
-            stationServiceManager.AddStation("192.168.1.15", 401); // Station 401
-            stationServiceManager.AddStation("192.168.0.1", 402); // Station 402
-            stationServiceManager.AddStation("192.168.0.18", 405); // Station 405
-            stationServiceManager.AddStation("192.168.0.20", 407); // Station 407
+            List<IPData> listData = FileHelper.ReadAllLines();
+            foreach (IPData each in listData)
+            {
+                if(each.IdStation > 407)
+                {
+                    break;
+                }
+                stationServiceManager.AddStation(each.IP, each.IdStation); // Station 401
+            }
 
             while (true)
             {
@@ -35,7 +36,6 @@ namespace QueueSifmes
                     {
                         var data = new StationData
                         {
-                            RFID = stationData.RFID,
                             Material_Id = stationData.Material_Id,
                             Quantity = stationData.Quantity,
                             CountContainer = stationData.CountContainer,
@@ -43,7 +43,7 @@ namespace QueueSifmes
                         };
 
                         //Console.WriteLine($"Enqueueing container {i} to Station {ip1}");
-                        stationServiceManager.EnqueueStation(ip1, data);
+                        stationServiceManager.EnqueueStation(listData[0].IP, data);
                     }
 
                     break;

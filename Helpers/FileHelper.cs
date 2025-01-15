@@ -1,33 +1,66 @@
-﻿using QueueSifmes.StationDataPLC;
+﻿using QueueSifmes.Models;
+using QueueSifmes.StationDataPLC;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.IO;
 
 namespace QueueSifmes.Helpers
 {
     internal class FileHelper
     {
-        private static string filePath = @"D:\Work\Report\job69\output.txt";
+        private static string outputFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\output.txt";
+        private static string ipFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\outputIP.txt";
         public static bool IsExistFile()
         {
-            return File.Exists(filePath);
+            return File.Exists(outputFile);
         }
 
         public static void DeleteFile()
         {
-            File.Delete(filePath);
+            File.Delete(outputFile);
         }
-
         public static StationData ReadFile()
         {
-            string content = File.ReadAllText(filePath);
+            string content = File.ReadAllText(outputFile);
             var data = ReadLine(content);
             return data;
         }
+        public static List<IPData> ReadAllLines()
+        {
+            List<IPData> list = new List<IPData>();
+            string[] lines = File.ReadAllLines(ipFile);
+            foreach (string line in lines)
+            {
+                var data = getIPLine(line);
+                if (data != null)
+                {
+                    list.Add(data);
+                }
+            }
+            return list;
+        }
+        public static IPData getIPLine(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                return null;
 
+            string[] parts = line.Split('-');
+            return new IPData
+            {
+                IdStation = int.Parse(parts[0]),
+                IP = parts[1]
+            };
+        }
         private static StationData ReadLine(string line)
         {
             string[] parts = line.Split(new char[] { ' ' });
-            return new StationData { RFID = parts[0], Material_Id = int.Parse(parts[1]), Quantity = int.Parse(parts[2]), CountContainer = int.Parse(parts[3]) };
+            return new StationData
+            {
+                Material_Id = int.Parse(parts[0]),
+                Quantity = int.Parse(parts[1]),
+                CountContainer = int.Parse(parts[2])
+            };
         }
 
         public static void DeleteImagesInDirectory(string directoryPath)
