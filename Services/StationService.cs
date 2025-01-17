@@ -6,6 +6,7 @@ using S7.Net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -210,12 +211,20 @@ namespace QueueSifmes
 
         private void ProcessStation401(StationData stationData)
         {
+            APIClient.sendBool(plcClient, plcDB, 2, true);
+            var startTime = Stopwatch.StartNew();
             while (true)
             {
+                if (startTime.Elapsed.TotalSeconds > 120)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    break;
+                }
                 bool flag = CheckAcknowledgment();
                 if (flag == true)
                 {
-                    var rfid = APIClient.read_string(plcClient, plcDB, start_byte_for_struct.string_start_byte);
+                    //var rfid = APIClient.read_string(plcClient, plcDB, start_byte_for_struct.string_start_byte);
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
                     break;
                 }
             }
@@ -226,11 +235,23 @@ namespace QueueSifmes
         {
             APIClient.sendInt(plcClient, plcDB, 0, stationData.Material_Id);
             APIClient.sendInt(plcClient, plcDB, 1, stationData.Quantity);
+            APIClient.sendBool(plcClient, plcDB, 2, true);
+            var startTime = Stopwatch.StartNew();
             while (true)
             {
+                if (startTime.Elapsed.TotalSeconds > 120)
+                {
+                    APIClient.sendInt(plcClient, plcDB, 0, 0);
+                    APIClient.sendInt(plcClient, plcDB, 1, 0);
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    break;
+                }
                 bool flag = CheckAcknowledgment();
                 if (flag == true)
                 {
+                    APIClient.sendInt(plcClient, plcDB, 0, 0);
+                    APIClient.sendInt(plcClient, plcDB, 1, 0);
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
                     break;
                 }
             }
@@ -243,44 +264,52 @@ namespace QueueSifmes
             APIClient.sendBool(plcClient, plcDB, 2, true);
             APIClient.sendBool(plcClient, plcDB, circleOrSquare, true);
             APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 0 : 1, 6);
+
+            bool isBool3Checked = false;
+            var startTime = Stopwatch.StartNew();
             while (true)
             {
-                bool bool3Status = APIClient.read_bool(plcClient, plcDB, 3);
-
-                if (bool3Status == true)
+                if (startTime.Elapsed.TotalSeconds > 120)
                 {
-                    string imagePath = "D:\\Work\\Report\\job69\\images\\nap.jpg";
-                    //bool lidVerificationResult = await DetectionService.DetectImage(imagePath); // module dung
-                    bool lidVerificationResult = true;  // module dung
-                    if (lidVerificationResult == true)
-                    {
-                        // Nếu đã cấp nắp thành công
-                        //Console.WriteLine("Co nap");
-                        APIClient.sendBool(plcClient, plcDB, 1, true);
-                        APIClient.sendBool(plcClient, plcDB, 4, true);
-                    }
-                    else
-                    {
-                         //Nếu chưa cấp nắp
-                        //Console.WriteLine("Khong nap");
-                        APIClient.sendBool(plcClient, plcDB, 1, true);
-                        APIClient.sendBool(plcClient, plcDB, 4, false);
-                    }
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    break;
+                }
 
-                    bool bool4Status = APIClient.read_bool(plcClient, plcDB, 4);
-                    if (bool4Status == true)
+                if (!isBool3Checked)
+                {
+                    bool bool3Status = APIClient.read_bool(plcClient, plcDB, 3);
+                    if (bool3Status == true)
                     {
-                        APIClient.sendBool(plcClient, plcDB, 2, false);
-                        APIClient.sendBool(plcClient, plcDB, 4, false);
-                        APIClient.sendBool(plcClient, plcDB, circleOrSquare, false);
-                        APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 0 : 1, 0);
-                        break; // Xử lý thùng tiếp theo
+                        isBool3Checked = true;
                     }
-                    else
-                    {
-                        APIClient.sendBool(plcClient, plcDB, 1, false);
-                        APIClient.sendBool(plcClient, plcDB, 3, false);
-                    }
+                    else continue;
+                }
+
+                //string imagePath = "D:\\Work\\Report\\job69\\images\\nap.jpg";
+                //bool lidVerificationResult = await DetectionService.DetectImage(imagePath); // module dung
+                bool lidVerificationResult = true;  // module dung
+                if (lidVerificationResult == true)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 4, true);
+                }
+                else
+                {
+                    APIClient.sendBool(plcClient, plcDB, 4, false);
+                }
+
+                bool result = CheckAcknowledgment();
+                if (result == true)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    APIClient.sendBool(plcClient, plcDB, 4, false);
+                    APIClient.sendBool(plcClient, plcDB, circleOrSquare, false);
+                    APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 0 : 1, 0);
+                    break; // Xử lý thùng tiếp theo
+                }
+                else
+                {
+                    APIClient.sendBool(plcClient, plcDB, 1, false);
+                    APIClient.sendBool(plcClient, plcDB, 3, false);
                 }
             }
         }
@@ -288,23 +317,39 @@ namespace QueueSifmes
         private void ProcessStation407()
         {
             APIClient.sendBool(plcClient, plcDB, 2, true);
+
+            bool isBool3Checked = false;
+            bool isLabeling = false;
+            var startTime = Stopwatch.StartNew();
             while (true)
             {
-                //bool isLabeling = APIClient.read_bool(plcClient, plcDB, 3);
-                bool isLabeling = true;
-                if (isLabeling == true)
+                if (startTime.Elapsed.TotalSeconds > 120)
                 {
-                    bool isValid = true;
-                    if (isValid)
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    APIClient.sendBool(plcClient, plcDB, 4, false);
+                    break;
+                }
+
+                if (!isBool3Checked)
+                {
+                    isLabeling = APIClient.read_bool(plcClient, plcDB, 3);
+                    if (isLabeling == true)
                     {
-                        APIClient.sendBool(plcClient, plcDB, 4, true);
-                        bool result = CheckAcknowledgment();
-                        if (result == true)
-                        {
-                            APIClient.sendBool(plcClient, plcDB, 2, false);
-                            APIClient.sendBool(plcClient, plcDB, 4, false);
-                            break; // Xử lý thùng tiếp theo
-                        }
+                        isBool3Checked = true;
+                    }
+                    else continue;
+                }
+
+                bool isValid = true;
+                if (isValid)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 4, true);
+                    bool result = CheckAcknowledgment();
+                    if (result == true)
+                    {
+                        APIClient.sendBool(plcClient, plcDB, 2, false);
+                        APIClient.sendBool(plcClient, plcDB, 4, false);
+                        break; // Xử lý thùng tiếp theo
                     }
                 }
             }
