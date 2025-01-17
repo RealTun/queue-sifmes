@@ -80,16 +80,16 @@ namespace QueueSifmes
                         {
                             Console.WriteLine($"Station {plcStation} processing index: {stationData.CurrentIndexContainer}");
 
-                            await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 0 });
+                            //await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 0 });
 
                             switch (plcStation)
                             {
-                                case 401:
-                                    ProcessStation401(stationData);
-                                    break;
-                                case 402:
-                                    ProcessStation402(stationData);
-                                    break;
+                                //case 401:
+                                //    ProcessStation401(stationData);
+                                //    break;
+                                //case 402:
+                                //    ProcessStation402(stationData);
+                                //    break;
                                 case 405:
                                     ProcessStation405();
                                     break;
@@ -99,9 +99,9 @@ namespace QueueSifmes
                                 case 408:
                                     ProcessStation408();
                                     break;
-                                case 409:
-                                    ProcessStation409();
-                                    break;
+                                //case 409:
+                                //    ProcessStation409();
+                                //    break;
                                 default:
                                     break;
                             }
@@ -109,7 +109,9 @@ namespace QueueSifmes
                             // mô phỏng thời gian xử lý
                             //await Task.Delay(1000);
 
-                            await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 1 });
+                            //await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 1 });
+
+                            Console.WriteLine($"Station {plcStation} processed index: {stationData.CurrentIndexContainer}");
 
                             // mô phỏng thời gian chuyển tới trạm tiếp theo
                             //await Task.Delay(2000);
@@ -359,8 +361,15 @@ namespace QueueSifmes
         private void ProcessStation408()
         {
             APIClient.sendBool(plcClient, plcDB, 2, true);
+            var startTime = Stopwatch.StartNew();
             while (true)
             {
+                if (startTime.Elapsed.TotalSeconds > 120)
+                {
+                    APIClient.sendBool(plcClient, plcDB, 2, false);
+                    break;
+                }
+
                 bool result = CheckAcknowledgment();
                 if (result == true)
                 {
