@@ -28,7 +28,7 @@ namespace QueueSifmes
             plcClient = new Plc(CpuType.S71500, ip, 0, 1);
             plcClient.ReadTimeout = 5000;
             plcClient.WriteTimeout = 5000;
-            plcDB = 10;
+            plcDB = 55;
             this.stationManager = stationManager; // Gán giá trị
             this.ip = ip;
             this.plcStation = plcStation;
@@ -84,12 +84,12 @@ namespace QueueSifmes
 
                             switch (plcStation)
                             {
-                                //case 401:
-                                //    ProcessStation401(stationData);
-                                //    break;
-                                //case 402:
-                                //    ProcessStation402(stationData);
-                                //    break;
+                                case 401:
+                                    ProcessStation401(stationData);
+                                    break;
+                                case 402:
+                                    ProcessStation402(stationData);
+                                    break;
                                 case 405:
                                     ProcessStation405();
                                     break;
@@ -99,9 +99,9 @@ namespace QueueSifmes
                                 case 408:
                                     ProcessStation408();
                                     break;
-                                //case 409:
-                                //    ProcessStation409();
-                                //    break;
+                                case 409:
+                                    ProcessStation409();
+                                    break;
                                 default:
                                     break;
                             }
@@ -217,7 +217,7 @@ namespace QueueSifmes
             var startTime = Stopwatch.StartNew();
             while (true)
             {
-                if (startTime.Elapsed.TotalSeconds > 120)
+                if (startTime.Elapsed.TotalSeconds > 300)
                 {
                     APIClient.sendBool(plcClient, plcDB, 2, false);
                     break;
@@ -241,7 +241,7 @@ namespace QueueSifmes
             var startTime = Stopwatch.StartNew();
             while (true)
             {
-                if (startTime.Elapsed.TotalSeconds > 120)
+                if (startTime.Elapsed.TotalSeconds > 300)
                 {
                     APIClient.sendInt(plcClient, plcDB, 0, 0);
                     APIClient.sendInt(plcClient, plcDB, 1, 0);
@@ -271,7 +271,7 @@ namespace QueueSifmes
             var startTime = Stopwatch.StartNew();
             while (true)
             {
-                if (startTime.Elapsed.TotalSeconds > 120)
+                if (startTime.Elapsed.TotalSeconds > 300)
                 {
                     APIClient.sendBool(plcClient, plcDB, 2, false);
                     break;
@@ -325,7 +325,7 @@ namespace QueueSifmes
             var startTime = Stopwatch.StartNew();
             while (true)
             {
-                if (startTime.Elapsed.TotalSeconds > 120)
+                if (startTime.Elapsed.TotalSeconds > 300)
                 {
                     APIClient.sendBool(plcClient, plcDB, 2, false);
                     APIClient.sendBool(plcClient, plcDB, 4, false);
@@ -364,7 +364,7 @@ namespace QueueSifmes
             var startTime = Stopwatch.StartNew();
             while (true)
             {
-                if (startTime.Elapsed.TotalSeconds > 120)
+                if (startTime.Elapsed.TotalSeconds > 300)
                 {
                     APIClient.sendBool(plcClient, plcDB, 2, false);
                     break;

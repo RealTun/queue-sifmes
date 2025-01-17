@@ -37,10 +37,6 @@ namespace QueueSifmes
             List<IPData> listData = FileHelper.ReadAllLines();
             foreach (IPData each in listData)
             {
-                if (each.IdStation > 407)
-                {
-                    break;
-                }
                 stationServiceManager.AddStation(each.IP, each.IdStation); // Station 401
             }
 
