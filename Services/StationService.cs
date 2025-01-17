@@ -77,6 +77,10 @@ namespace QueueSifmes
                         OpenConnection();
                         if (data is StationData stationData)
                         {
+                            Console.WriteLine($"Station {plcStation} processing index: {stationData.CurrentIndexContainer}");
+
+                            await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 0 });
+
                             switch (plcStation)
                             {
                                 case 401:
@@ -101,18 +105,13 @@ namespace QueueSifmes
                                     break;
                             }
 
-
-                            Console.WriteLine($"Station {plcStation} processing index: {stationData.CurrentIndexContainer}");
-
-                            await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 0 });
-
                             // mô phỏng thời gian xử lý
-                            await Task.Delay(1000);
+                            //await Task.Delay(1000);
 
                             await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 1 });
 
                             // mô phỏng thời gian chuyển tới trạm tiếp theo
-                            await Task.Delay(2000);
+                            //await Task.Delay(2000);
                             //WaitForCompletionAsync();
 
                             // Chuyển phần tử tới station tiếp theo
@@ -220,7 +219,7 @@ namespace QueueSifmes
                     break;
                 }
             }
-            updateStatus();
+            //updateStatus();
         }
 
         private void ProcessStation402(StationData stationData)
@@ -235,7 +234,7 @@ namespace QueueSifmes
                     break;
                 }
             }
-            updateStatus();
+            //updateStatus();
         }
 
         private async void ProcessStation405()
@@ -243,7 +242,7 @@ namespace QueueSifmes
             int circleOrSquare = 5;
             APIClient.sendBool(plcClient, plcDB, 2, true);
             APIClient.sendBool(plcClient, plcDB, circleOrSquare, true);
-            APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 1 : 2, 6);
+            APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 0 : 1, 6);
             while (true)
             {
                 bool bool3Status = APIClient.read_bool(plcClient, plcDB, 3);
@@ -251,18 +250,19 @@ namespace QueueSifmes
                 if (bool3Status == true)
                 {
                     string imagePath = "D:\\Work\\Report\\job69\\images\\nap.jpg";
-                    bool lidVerificationResult = await DetectionService.DetectImage(imagePath); // module dung
+                    //bool lidVerificationResult = await DetectionService.DetectImage(imagePath); // module dung
+                    bool lidVerificationResult = true;  // module dung
                     if (lidVerificationResult == true)
                     {
                         // Nếu đã cấp nắp thành công
-                        Console.WriteLine("Co nap");
+                        //Console.WriteLine("Co nap");
                         APIClient.sendBool(plcClient, plcDB, 1, true);
                         APIClient.sendBool(plcClient, plcDB, 4, true);
                     }
                     else
                     {
-                        // Nếu chưa cấp nắp
-                        Console.WriteLine("Khong nap");
+                         //Nếu chưa cấp nắp
+                        //Console.WriteLine("Khong nap");
                         APIClient.sendBool(plcClient, plcDB, 1, true);
                         APIClient.sendBool(plcClient, plcDB, 4, false);
                     }
@@ -273,7 +273,7 @@ namespace QueueSifmes
                         APIClient.sendBool(plcClient, plcDB, 2, false);
                         APIClient.sendBool(plcClient, plcDB, 4, false);
                         APIClient.sendBool(plcClient, plcDB, circleOrSquare, false);
-                        APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 1 : 2, 0);
+                        APIClient.sendInt(plcClient, plcDB, circleOrSquare == 5 ? 0 : 1, 0);
                         break; // Xử lý thùng tiếp theo
                     }
                     else
@@ -290,7 +290,8 @@ namespace QueueSifmes
             APIClient.sendBool(plcClient, plcDB, 2, true);
             while (true)
             {
-                bool isLabeling = APIClient.read_bool(plcClient, plcDB, 3);
+                //bool isLabeling = APIClient.read_bool(plcClient, plcDB, 3);
+                bool isLabeling = true;
                 if (isLabeling == true)
                 {
                     bool isValid = true;
@@ -307,7 +308,7 @@ namespace QueueSifmes
                     }
                 }
             }
-            updateStatus();
+            //updateStatus();
         }
 
         private void ProcessStation408()
@@ -322,7 +323,7 @@ namespace QueueSifmes
                     break;
                 }
             }
-            updateStatus();
+            //updateStatus();
         }
 
         private void ProcessStation409()
