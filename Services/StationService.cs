@@ -80,7 +80,7 @@ namespace QueueSifmes
                         {
                             Console.WriteLine($"Station {plcStation} processing index: {stationData.CurrentIndexContainer}");
 
-                            //await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 0 });
+                            await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 0 });
 
                             switch (plcStation)
                             {
@@ -109,7 +109,7 @@ namespace QueueSifmes
                             // mô phỏng thời gian xử lý
                             //await Task.Delay(1000);
 
-                            //await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 1 });
+                            await HookService.SendDataAsync(new { station = plcStation, index = stationData.CurrentIndexContainer, status = 1 });
 
                             Console.WriteLine($"Station {plcStation} processed index: {stationData.CurrentIndexContainer}");
 
@@ -127,10 +127,11 @@ namespace QueueSifmes
                             else
                             {
                                 Console.WriteLine($"Station {plcStation} completed processing for index: {stationData.CurrentIndexContainer}");
-                                //if (plcStation == 409)
-                                //{
-                                //    FileHelper.DeleteFile();
-                                //}
+                                if (plcStation == 409)
+                                {
+                                    //FileHelper.DeleteFile();
+                                    Console.WriteLine("Processed all station!");
+                                }
                             }
                         }
                     }
@@ -154,7 +155,12 @@ namespace QueueSifmes
             {
                 if (listData[i].IdStation == plcStation)
                 {
-                    return listData[i + 1].IP;
+                    if (i + 1 < listData.Count)
+                    {
+                        return listData[i + 1].IP;
+                    }
+
+                    return null;
                 }
             }
             return null;

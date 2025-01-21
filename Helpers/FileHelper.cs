@@ -9,11 +9,27 @@ namespace QueueSifmes.Helpers
 {
     internal class FileHelper
     {
-        //private static string outputFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\output.txt";
-        //private static string ipFile = @"D:\Workspace\sifmes_ngangiang_web\public\storage\outputIP.txt";
+        //private static string outputFile = @"D:\Work\Report\Sifmes\sifmes_ngangiang_web\public\storage\output.txt";
+        //private static string ipFile = @"D:\Work\Report\Sifmes\sifmes_ngangiang_web\public\storage\outputIP.txt";
 
         public static string outputFile = @"D:\Work\Report\job69\output.txt";
         public static string ipFile = @"D:\Work\Report\job69\outputIP.txt";
+
+        public static void SetDataPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                outputFile = path;
+            }
+        }
+
+        public static void SetIpPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                ipFile = path;
+            }
+        }
 
         public static bool IsExistFile()
         {

@@ -6,39 +6,51 @@ using S7.Net;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace QueueSifmes
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            //try
-            //{
-            //    Plc plcClient = new Plc(CpuType.S71500, "192.168.2.40", 0, 1);
-            //    plcClient.ReadTimeout = 5000;
-            //    plcClient.WriteTimeout = 5000;
-            //    plcClient.Open();
-
-            //    if (plcClient.IsConnected)
-            //    {
-            //        Console.WriteLine("hello");
-            //    }
-            //    //Console.WriteLine("Good bai");
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine($"loi: {e.Message}");
-            //}
-
             var stationServiceManager = new StationServiceManager();
 
-            List<IPData> listData = FileHelper.ReadAllLines();
-            foreach (IPData each in listData)
+            // params
+            if (args.Length > 0)
             {
-                stationServiceManager.AddStation(each.IP, each.IdStation); // Station 401
+                string dataPath = args[0];
+                string ipPath = args[1];
+
+                FileHelper.SetDataPath(dataPath);
+                FileHelper.SetIpPath(ipPath);
+            }  
+
+            List<IPData> listData = FileHelper.ReadAllLines();
+
+            // check connection
+            Console.WriteLine("Checking connection!");
+
+            foreach (IPData item in listData)
+            {
+                try
+                {
+                    Plc plcClient = new Plc(CpuType.S71500, item.IP, 0, 1);
+                    plcClient.Open();
+
+                    if (plcClient.IsConnected)
+                    {
+                        //Console.WriteLine($"Connected to {item.IP}");
+                        stationServiceManager.AddStation(item.IP, item.IdStation);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Error connecting to {item.IP}: {ex.Message}");
+                }
             }
+
+            Console.WriteLine("\nPress eny button to start process station!");
+            Console.ReadKey();
 
             while (true)
             {
@@ -57,7 +69,6 @@ namespace QueueSifmes
                             CurrentIndexContainer = i
                         };
 
-                        //Console.WriteLine($"Enqueueing container {i} to Station {ip1}");
                         stationServiceManager.EnqueueStation(listData[0].IP, data);
                     }
 
